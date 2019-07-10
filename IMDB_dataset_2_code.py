@@ -28,8 +28,8 @@ y_test = np.asarray(test_labels).astype('float32')
 #Let us divide our training data to training and validation data.
 x_val = x_train[:5000]
 y_val = y_train[:5000]
-x_train = x_train[5000:]
-y_train = y_train[5000:]
+x_train_1 = x_train[5000:]
+y_train_1 = y_train[5000:]
 
 #Defining a keras callback
 class my_callback(keras.callbacks.Callback):
@@ -40,9 +40,12 @@ class my_callback(keras.callbacks.Callback):
 
 callback = my_callback()
 
+from keras.layers import Input, Dense
+from keras.models import Model
+
 #Reduced the amount of neurons in first layer drastically and
 #increased in the second layer a little.
-X = Input(shape = (10000,))
+X = Input(shape = (x_train.shape[1],))
 Y = Dense(32, activation = 'relu')(X)
 Y = Dense(16, activation = 'relu')(Y)
 Y = Dense(1, activation = 'sigmoid')(Y)
@@ -50,7 +53,7 @@ Y = Dense(1, activation = 'sigmoid')(Y)
 model = Model(inputs = [X], outputs = [Y])
 model.compile(optimizer = 'Adam', loss = 'binary_crossentropy',
               metrics = ['accuracy'])
-history = model.fit(x_train, y_train, epochs = 15, callbacks = [callback],
+history = model.fit(x_train_1, y_train_1, epochs = 15, callbacks = [callback],
           batch_size = 1024, validation_data = (x_val, y_val))
 #Using batch_size trains our model with each gradient descent step trained on
 #a random batch with 1024 samples. It is good to keep batch_size as a power
@@ -61,3 +64,23 @@ history = model.fit(x_train, y_train, epochs = 15, callbacks = [callback],
 hist_dict = history.history
 
 import matplotlib.pyplot as plt
+
+plt.figure(figsize=(20,8))
+
+plt.subplot(1, 2, 1)
+plt.plot(np.arange(len(hist_dict['acc'])), hist_dict['acc'], '.-', color = 'blue')
+plt.plot(np.arange(len(hist_dict['val_acc'])), hist_dict['val_acc'], 'o-', color = 'green')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Accuracy in Training v/s Validation')
+plt.legend(('Training', 'Validation'))
+
+plt.subplot(1, 2, 2)
+plt.plot(np.arange(len(hist_dict['loss'])), hist_dict['loss'], '.-', color = 'blue')
+plt.plot(np.arange(len(hist_dict['val_loss'])), hist_dict['val_loss'], 'o-', color = 'green')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Loss in Training v/s Validation')
+plt.legend(('Training', 'Validation'))
+
+plt.show()
