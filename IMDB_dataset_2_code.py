@@ -34,7 +34,7 @@ y_train_1 = y_train[5000:]
 #Defining a keras callback
 class my_callback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs = {}):
-        if(logs.get('acc') > 0.99):
+        if(logs.get('acc') > 0.95):
             print("Stopping to prevent overfitting")
             self.model.stop_training = True
 
@@ -46,7 +46,7 @@ from keras.models import Model
 #Reduced the amount of neurons in first layer drastically and
 #increased in the second layer a little.
 X = Input(shape = (x_train.shape[1],))
-Y = Dense(32, activation = 'relu')(X)
+Y = Dense(16, activation = 'relu')(X)
 Y = Dense(16, activation = 'relu')(Y)
 Y = Dense(1, activation = 'sigmoid')(Y)
 
@@ -64,6 +64,85 @@ history = model.fit(x_train_1, y_train_1, epochs = 15, callbacks = [callback],
 hist_dict = history.history
 
 import matplotlib.pyplot as plt
+
+plt.figure(figsize=(20,8))
+
+plt.subplot(1, 2, 1)
+plt.plot(np.arange(len(hist_dict['acc'])), hist_dict['acc'], '.-', color = 'blue')
+plt.plot(np.arange(len(hist_dict['val_acc'])), hist_dict['val_acc'], 'o-', color = 'green')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Accuracy in Training v/s Validation')
+plt.legend(('Training', 'Validation'))
+
+plt.subplot(1, 2, 2)
+plt.plot(np.arange(len(hist_dict['loss'])), hist_dict['loss'], '.-', color = 'blue')
+plt.plot(np.arange(len(hist_dict['val_loss'])), hist_dict['val_loss'], 'o-', color = 'green')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Loss in Training v/s Validation')
+plt.legend(('Training', 'Validation'))
+
+plt.show()
+
+#To tackle overfitting, we can use the following ways:-
+
+#Increase training data
+#Reduce the network size
+#Add weight regularization
+#Adding Dropout
+
+from keras.regularizers import l1, l2, l1_l2
+
+X = Input(shape = (x_train.shape[1],))
+Y = Dense(16, activation = 'relu', kernel_regularizer = l1(0.001))(X)
+Y = Dense(16, activation = 'relu', kernel_regularizer = l1(0.002))(Y)
+Y = Dense(1, activation = 'sigmoid')(Y)
+
+model2 = Model(inputs = [X], outputs = [Y])
+model2.compile(optimizer = 'Adam', loss = 'binary_crossentropy',
+              metrics = ['accuracy'])
+history2 = model2.fit(x_train_1, y_train_1, epochs = 15, callbacks = [callback],
+          batch_size = 1024, validation_data = (x_val, y_val))
+
+hist_dict = history2.history
+
+plt.figure(figsize=(20,8))
+
+plt.subplot(1, 2, 1)
+plt.plot(np.arange(len(hist_dict['acc'])), hist_dict['acc'], '.-', color = 'blue')
+plt.plot(np.arange(len(hist_dict['val_acc'])), hist_dict['val_acc'], 'o-', color = 'green')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Accuracy in Training v/s Validation')
+plt.legend(('Training', 'Validation'))
+
+plt.subplot(1, 2, 2)
+plt.plot(np.arange(len(hist_dict['loss'])), hist_dict['loss'], '.-', color = 'blue')
+plt.plot(np.arange(len(hist_dict['val_loss'])), hist_dict['val_loss'], 'o-', color = 'green')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Loss in Training v/s Validation')
+plt.legend(('Training', 'Validation'))
+
+plt.show()
+
+from keras.layers import Dropout
+
+X = Input(shape = (x_train.shape[1],))
+Y = Dense(16, activation = 'relu')(X)
+Y = Dropout(0.7)(Y)
+Y = Dense(16, activation = 'relu')(Y)
+Y = Dropout(0.5)(Y)
+Y = Dense(1, activation = 'sigmoid')(Y)
+
+model3 = Model(inputs = [X], outputs = [Y])
+model3.compile(optimizer = 'Adam', loss = 'binary_crossentropy',
+              metrics = ['accuracy'])
+history3 = model3.fit(x_train_1, y_train_1, epochs = 15, callbacks = [callback],
+          batch_size = 1024, validation_data = (x_val, y_val))
+
+hist_dict = history3.history
 
 plt.figure(figsize=(20,8))
 
