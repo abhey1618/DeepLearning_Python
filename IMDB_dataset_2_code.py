@@ -58,6 +58,8 @@ history = model.fit(x_train_1, y_train_1, epochs = 15, callbacks = [callback],
 #Using batch_size trains our model with each gradient descent step trained on
 #a random batch with 1024 samples. It is good to keep batch_size as a power
 #of 2 because that helps us in utilising the power of GPU efficiently.
+#The number of samples in a batch is often a power of 2, to facilitate 
+#memory allocation on GPU.
 
 #model.fit returns a History object
 
